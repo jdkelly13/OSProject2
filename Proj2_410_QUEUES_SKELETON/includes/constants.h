@@ -39,10 +39,10 @@ const char*	const 	LOG_FILE		= "results.txt";
 
 //this is where the loaded data goes
 struct PCB {
-	int process_number	;//= UNINITIALIZED;
-	int	start_time		;//= UNINITIALIZED;
-	int cpu_time		;//= UNINITIALIZED;
-	int io_time			;//= UNINITIALIZED;
+	int process_number	= UNINITIALIZED;
+	int	start_time		= UNINITIALIZED;
+	int cpu_time		= UNINITIALIZED;
+	int io_time			= UNINITIALIZED;
 };
 
 #ifdef _DEBUG

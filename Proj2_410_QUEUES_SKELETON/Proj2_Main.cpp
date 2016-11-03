@@ -22,7 +22,7 @@ int main()
 	bool showJobListEmptyMessage	= true;
 
 	//load all jobs from job file
-	int iRetJobs			= joblist::init();		//load file
+	int iRetJobs			= joblist::init("testdata.txt");		//load file
 	if (iRetJobs < SUCCESS)
 		return FAIL;
 
@@ -118,9 +118,10 @@ int main()
 		}
 
 		//if everything is done do not log the event
-		if (iRetJobs != NO_JOBS || iRetDispatcher != NO_JOBS)
+		if (iRetJobs != NO_JOBS || iRetDispatcher != NO_JOBS) {
 			ST_LOG::log(tickcount, dispatcher::getCurrentJob().process_number);
-
+			std::cout << iRetJobs << " " << iRetDispatcher << std::endl;
+		}
 	} while (iRetJobs != NO_JOBS || iRetDispatcher != NO_JOBS);
 
 	ST_LOG::save();

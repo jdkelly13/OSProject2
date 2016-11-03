@@ -1,13 +1,14 @@
 #include "..\includes\Dispatcher.h"
 #include "..\includes\constants.h"
 #include "..\includes\file_io.h"
-#include "..\Proj2_Main.cpp"
+//#include "..\Proj2_Main.cpp"
 #include <queue>
 
 PCB runningPCB;
 std::queue<PCB> ready_Q;
 std::queue<PCB> blocked_Q;
-
+//Timeslice test.
+const int TIMESLICE = 4;
 
 
 //Initializes the dispatcher.  Can also be used as a reset.
@@ -39,8 +40,8 @@ int dispatcher::processInterrupt(int interrupt) {
 			return PCB_UNIMPLEMENTED;
 		}
 		//Adds elements from the blocked queue to the ready queue.
-		while(blocked_Q.empty){
-			ready_Q.push(blocked_Q.front);
+		while(!(blocked_Q.empty())){
+			ready_Q.push(blocked_Q.front());
 			blocked_Q.pop();
 		}
 		
@@ -48,12 +49,14 @@ int dispatcher::processInterrupt(int interrupt) {
 	}
 
 	//Handles if the interrupt is a time slice interrupt.
-	if(ready_Q.empty || blocked_Q.empty){
+
+	//Checks to see if the queues are empty.
+	if(ready_Q.empty() && blocked_Q.empty()){
 		return NO_JOBS;
 	}
 
 	//Switches the processes.
-	PCB temp = ready_Q.front;
+	PCB temp = ready_Q.front();
 	ready_Q.push(runningPCB);
 	runningPCB = temp;
 	
@@ -63,11 +66,11 @@ int dispatcher::processInterrupt(int interrupt) {
 int dispatcher::doTick() {
 
 	//Checks to see if there is a running PCB and handles if there isnt.
-	if(runningPCB.start_time == UNINITIALIZED){
+	if(runningPCB.process_number == UNINITIALIZED){
 
 		//Handles ready_Q empty being true.
-		if(ready_Q.empty){
-			if(blocked_Q.empty){
+		if(ready_Q.empty()){
+			if(blocked_Q.empty()){
 				return NO_JOBS;
 			}
 			return BLOCKED_JOBS;
@@ -78,14 +81,14 @@ int dispatcher::doTick() {
 	}
 
 	//Subtracts 1 from the PCB cpu time.
-	runningPCB.cpu_time = runningPCB.cpu_time--;
+	(&runningPCB)->cpu_time--;
 
-	//Checks to see if the runningPCB is finished and handles if it isn't.
-	if(runningPCB.cpu_time==0){
+	//Checks to see if the runningPCB is not finished and handles if it isn't.
+	if(runningPCB.cpu_time!=0){
 		return PCB_CPUTIME_DECREMENTED;
 	}
 
-	//Handles cpu time being 0.
+	//Handles cpu time is 0;.
 	int returnval = PCB_FINISHED;
 
 	//Checks to see if the runningPCB makes a blocked IO call and handles it.
@@ -96,7 +99,9 @@ int dispatcher::doTick() {
 
 	//Unloads PCB and returns it as finished or invalid based on IO blocking.
 	ready_Q.pop();
-	struct PCB empty;
-	runningPCB = empty;
+	runningPCB.cpu_time = UNINITIALIZED;
+	runningPCB.io_time = UNINITIALIZED;
+	runningPCB.process_number = UNINITIALIZED;
+	runningPCB.start_time = UNINITIALIZED;
 	return returnval;	
 }
